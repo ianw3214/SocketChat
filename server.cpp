@@ -15,6 +15,9 @@ std::mutex clientmaplock;
 std::map<int, int> clients;
 int numclients;
 
+// method to be called by a client when a message is received
+//  sends the message to every other connected client and prints
+//  it to the server.
 void sendmessages(char message[], int messagesize, int sender) {
     std::lock_guard<std::mutex> lock(clientmaplock);
     for (const auto e: clients) {
@@ -25,6 +28,8 @@ void sendmessages(char message[], int messagesize, int sender) {
     }
 }
 
+// method to be called by a thread each time a client connects
+//  handles the naming/message recieving of the clients
 void recievemessages(int fd) {
     // recieve the name from the client first
     char name[256];
@@ -50,6 +55,7 @@ void recievemessages(int fd) {
         std::cout << message << std::endl;
     }
     
+    // notify the other clients once a client has disconnected
     char quitmessage[272];
     strcpy(quitmessage, name);
     strcat(quitmessage, " disconnected..");
@@ -66,9 +72,26 @@ void recievemessages(int fd) {
     clients.erase(desiredid);
 }
 
+// method to be called by a thread in main
+//  handles any input from the console on the server
+void handleServerCommands() {
+    char line[256];
+    while(std::cin.getline(line, 256)){
+        if (strcmp(line, "quit") == 0) {
+            std::cout << "Exiting the application..." << std::endl;
+            exit(0);    
+        }
+    }
+}
+
+// entry point
 int main(int argc, char* argv[]){
 
     numclients = 0;
+
+    // create a thread to handle server input
+    std::thread serverinput(handleServerCommands);
+    serverinput.detach();
 
     // a socket descriptor for listening for connections
     int listenfd;
