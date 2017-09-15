@@ -38,7 +38,13 @@ int main(int argc, char * argv[]) {
     sockaddr_in serveraddress;
     serveraddress.sin_family = AF_INET;
     serveraddress.sin_port = htons(PORT);
-    inet_pton(AF_INET, ADDRESS, &(serveraddress.sin_addr));
+    // if there was a command line argument for the target address, use it
+    // otherwise, use the default localhost address    
+    if (argc > 1) {
+        inet_pton(AF_INET, argv[1], &(serveraddress.sin_addr));
+    }else{
+        inet_pton(AF_INET, ADDRESS, &(serveraddress.sin_addr));
+    }
 
     // connect to the server
     if (connect(fd, (sockaddr*) &serveraddress, sizeof(serveraddress)) < 0) {
