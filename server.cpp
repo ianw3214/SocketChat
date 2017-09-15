@@ -77,10 +77,16 @@ void recievemessages(int fd) {
 void handleServerCommands() {
     char line[256];
     while(std::cin.getline(line, 256)){
+        // quit the application if the user types quit
         if (strcmp(line, "quit") == 0) {
             std::cout << "Exiting the application..." << std::endl;
             exit(0);    
         }
+        // otherwise, just print the message
+        char buffer[265];
+        strcpy(buffer, "server : ");
+        strcat(buffer, line);
+        sendmessages(buffer, 265, -1);
     }
 }
 
